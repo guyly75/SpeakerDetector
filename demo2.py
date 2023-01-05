@@ -3,9 +3,10 @@ from demo_utils import *
 from pathlib import Path
 from scipy.io.wavfile import write
 from datetime import datetime
+import os
 
 def is_speaking(similarity_value):
-    return similarity_value>=0.85 if True else False
+    return similarity_value>=0.80 if True else False
 
 
 def speaker_chunks(wav,wav_splits,speaker_values):
@@ -15,7 +16,7 @@ def speaker_chunks(wav,wav_splits,speaker_values):
         if is_speaker_speaking == is_speaking(value): # no change
             continue
         elif is_speaker_speaking: # stop speaking
-            if is_speaking(max(speaker_values[position:position+10])):
+            if is_speaking(max(speaker_values[position:position+100])):
                 continue
             else:
                 yield wav_splits[start_speak].start,wav_splits[position-1].stop
@@ -53,7 +54,7 @@ speaker_wavs = [rubi_wav,merav_wav]
 # won't have enough. There's a speed drawback, but it remains reasonable.
 encoder = VoiceEncoder("cpu")
 print("Running the continuous embedding on cpu, this might take a while...")
-_, cont_embeds, wav_splits = encoder.embed_utterance(wav, return_partials=True, rate=2)
+_, cont_embeds, wav_splits = encoder.embed_utterance(wav, return_partials=True, rate=5)
 
 
 # Get the continuous similarity for every speaker. It amounts to a dot product between the 
@@ -64,6 +65,6 @@ similarity_dict = {name: cont_embeds @ speaker_embed for name, speaker_embed in
 print(f'similaroty dictionary done: {datetime.now()}')        
 for speaker in speaker_names:
     for counter,(start,stop) in enumerate(speaker_chunks(wav,wav_splits,similarity_dict[speaker])):
-        write(f'output/{input_filename} - {speaker}-{start/16000:.1f}-{stop/16000:.1f}.wav',16000,np.array(wav[start:stop]))
+        write(f'output\\{os.path.basename(input_filename)} - {speaker}-{start/16000:.1f}-{stop/16000:.1f}.wav',16000,np.array(wav[start:stop]))
 
 print(f'done: {datetime.now()}')        
