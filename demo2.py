@@ -10,13 +10,14 @@ def is_speaking(similarity_value):
 
 
 def speaker_chunks(wav,wav_splits,speaker_values):
+    seconds_per_window=wav_splits[0].stop/16000
     is_speaker_speaking=is_speaking(speaker_values[0])
     start_speak=0
     for position,value in enumerate(speaker_values):
         if is_speaker_speaking == is_speaking(value): # no change
             continue
         elif is_speaker_speaking: # stop speaking
-            if is_speaking(max(speaker_values[position:position+100])):
+            if is_speaking(max(speaker_values[position:int(position+(seconds_per_window*10))])):
                 continue
             else:
                 yield wav_splits[start_speak].start,wav_splits[position-1].stop
@@ -54,7 +55,7 @@ speaker_wavs = [rubi_wav,merav_wav]
 # won't have enough. There's a speed drawback, but it remains reasonable.
 encoder = VoiceEncoder("cpu")
 print("Running the continuous embedding on cpu, this might take a while...")
-_, cont_embeds, wav_splits = encoder.embed_utterance(wav, return_partials=True, rate=5)
+_, cont_embeds, wav_splits = encoder.embed_utterance(wav, return_partials=True, rate=3)
 
 
 # Get the continuous similarity for every speaker. It amounts to a dot product between the 
