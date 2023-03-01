@@ -55,11 +55,14 @@ def get_from_or_create_file(file_name,function_to_execute):
     my_file = Path(file_name)
     if my_file.exists():
         with open(my_file, "rb") as infile:
-            ret= pickle.load(infile)
-    else:
-        ret=function_to_execute()    
-        with open(my_file, "wb") as outfile:
-            pickle.dump(ret, outfile)
+            try:            
+                return pickle.load(infile)
+            except:
+                print("error in file")
+
+    ret=function_to_execute()    
+    with open(my_file, "wb") as outfile:
+        pickle.dump(ret, outfile)
     return ret
     
 
@@ -200,10 +203,15 @@ def process_file(input_filename,speakers_data):
 def main():
     speakers_data=get_speakers_data()
 
-    sessions_folder = r'G:\My Drive\Speakers Project\Data\Audio Extraction\speakers'
+    sessions_folder = r'G:\My Drive\Speakers Project\Data\Audio Extraction'
     files = Path(sessions_folder).glob('*.wav')
-    for file in files:
-        process_file(file.name,speakers_data)
+    for file in files:        
+        prm_infile = Path(str(file)+'XX.dat')
+        if not prm_infile.exists():
+            try: 
+                process_file(str(file),speakers_data)
+            except:
+                print("exception raised in file: "+str(file))
 
     print(f'done: {datetime.now()}')        
 
