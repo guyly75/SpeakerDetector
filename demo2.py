@@ -9,7 +9,7 @@ import librosa
 import math
 
 
-speaking_level=0.82
+speaking_level=0.84
 
 def is_speaking(similarity_value):
     return similarity_value>=speaking_level if True else False
@@ -113,7 +113,7 @@ def embed_uttorence_chunks(input_filename,return_partials,rate):
 def get_speakers_data():
     # assign directory
     encoder = VoiceEncoder("cpu")
-    speakers_folder = r'G:\My Drive\Speakers Project\Data\Audio Extraction\speakers'
+    speakers_folder = r'F:\Drive\Speakers Project\Data\Audio Extraction\speakers'
     files = Path(speakers_folder).glob('*.wav')
     speakers_data={}
     wav_data={}
@@ -187,31 +187,35 @@ def process_file(input_filename,speakers_data):
             if speaker[-7:]=="-prepro":
                 speaker=speaker[:-7]    
             for counter,(start,stop) in enumerate(new_picks(processed_wav,wav_splits,similarity_dict[speaker])):
-                folder=f'G:\\My Drive\\Speakers Project\\processed\\{speaker}'
+                folder=f'F:\\Drive\\Speakers Project\\processed\\{speaker}'
                 if not Path(folder).exists():
                     os.mkdir(folder)
-                write(f'{folder}\\{os.path.basename(input_filename)}-{part}-{speaker}-{(datetime.min+timedelta(seconds=start/16000)):%H`%M`%S}-{(datetime.min+timedelta(seconds=stop/16000)):%H`%M`%S}.wav',16000,np.array(processed_wav[start:stop]))
+                max_simularity=round(max(similarity_dict[speaker]) * 100,1)
+                mean_simularity=round(np.mean(similarity_dict[speaker]) * 100,1)
+                write(f'{folder}\\{max_simularity}%-{mean_simularity}%-{os.path.basename(input_filename)}-{part}-{speaker}-{(datetime.min+timedelta(seconds=start/16000)):%H`%M`%S}-{(datetime.min+timedelta(seconds=stop/16000)):%H`%M`%S}.wav',16000,np.array(processed_wav[start:stop]))
 
         print(f'*********  D O N E: {os.path.basename(input_filename)}  ***************\n')                     
        
     print(f'complete: {input_filename} - {datetime.now()}')     
 
-#sessions_folder = r'G:\My Drive\Speakers Project\Data\Audio Extraction'
+#sessions_folder = r'F:\\Drive\Speakers Project\Data\Audio Extraction'
 #files = Path(sessions_folder).glob('*.wav')
 #for file in files:
     #process_file(file)
 def main():
     speakers_data=get_speakers_data()
 
-    sessions_folder = r'G:\My Drive\Speakers Project\Data\Audio Extraction'
+    sessions_folder = r'F:\Drive\Speakers Project\Data\Audio Extraction'
     files = Path(sessions_folder).glob('*.wav')
     for file in files:        
+        # if not file.name.startswith("1901"):
+        #     continue
         prm_infile = Path(str(file)+'XX.dat')
-        if not prm_infile.exists():
-            try: 
-                process_file(str(file),speakers_data)
-            except:
-                print("exception raised in file: "+str(file))
+        #if not prm_infile.exists():
+        try: 
+            process_file(str(file),speakers_data)
+        except:
+            print("exception raised in file: "+str(file))
 
     print(f'done: {datetime.now()}')        
 
